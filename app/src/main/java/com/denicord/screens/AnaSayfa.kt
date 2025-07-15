@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -21,7 +22,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnaSayfa(
-    authViewModel: AuthViewModel = viewModel()
+    authViewModel: AuthViewModel = viewModel(),
+    onNavigateToProfile: () -> Unit
 ) {
     val currentUser = FirebaseAuth.getInstance().currentUser
     val channelViewModel: ChannelViewModel = viewModel()
@@ -86,6 +88,27 @@ fun AnaSayfa(
                 )
                 
                 Spacer(modifier = Modifier.weight(1f))
+                
+                // Profile Button
+                OutlinedButton(
+                    onClick = { 
+                        onNavigateToProfile()
+                        scope.launch {
+                            drawerState.close()
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Person,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Profil")
+                }
                 
                 // Logout Button
                 OutlinedButton(

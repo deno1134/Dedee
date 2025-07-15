@@ -1,0 +1,22 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Profil resimleri - kullanıcılar yalnızca kendi resimlerini yükleyebilir
+    match /profile_images/{userId}_{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Kanal resimleri - giriş yapmış kullanıcılar okuyabilir ve yazabilir
+    match /channel_images/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    // Genel medya dosyaları - giriş yapmış kullanıcılar okuyabilir ve yazabilir
+    match /media/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+  }
+}

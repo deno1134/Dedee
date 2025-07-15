@@ -30,7 +30,25 @@
 4. "Email/Password" seçeneğini etkinleştirin
 5. Ayarları kaydedin
 
-## 5. Projeyi Çalıştırma
+## 5. Firestore Database Kurulumu
+
+1. Firebase Console'da "Firestore Database" sekmesine gidin
+2. "Veritabanı oluştur" butonuna tıklayın
+3. "Test modunda başlat" seçeneğini seçin (geçici)
+4. Konum seçin (Europe-west3 önerilen)
+5. "Bitti" butonuna tıklayın
+6. Proje kök dizinindeki `firestore.rules` dosyasını Firebase Console'da Rules sekmesine kopyalayın
+
+## 6. Firebase Storage Kurulumu
+
+1. Firebase Console'da "Storage" sekmesine gidin
+2. "Başlat" butonuna tıklayın
+3. "Test modunda başlat" seçeneğini seçin (geçici)
+4. Konum seçin (Europe-west3 önerilen)
+5. "Bitti" butonuna tıklayın
+6. Proje kök dizinindeki `storage.rules` dosyasını Firebase Console'da Rules sekmesine kopyalayın
+
+## 7. Projeyi Çalıştırma
 
 1. Android Studio'da projeyi açın
 2. Gradle sync yapın
@@ -66,8 +84,9 @@
 
 ## Ek Özellikler
 
-Bu projede şu Firebase Authentication özellikleri kullanılmıştır:
+Bu projede şu Firebase özellikleri kullanılmıştır:
 
+### Firebase Authentication
 - ✅ Email/Password ile kayıt
 - ✅ Email/Password ile giriş
 - ✅ Otomatik oturum yönetimi
@@ -75,12 +94,38 @@ Bu projede şu Firebase Authentication özellikleri kullanılmıştır:
 - ✅ Hata mesajları (Türkçe)
 - ✅ Loading durumları
 
+### Firebase Firestore
+- ✅ Kullanıcı profil bilgileri
+- ✅ Kanal verileri
+- ✅ Mesaj verileri
+- ✅ Gerçek zamanlı senkronizasyon
+- ✅ Offline cache desteği
+
+### Firebase Storage
+- ✅ Profil resmi yükleme
+- ✅ Otomatik resim optimizasyonu
+- ✅ Güvenli dosya erişimi
+- ✅ Progress tracking
+
 ## Geliştirme Notları
 
+### Authentication
 - `AuthRepository`: Firebase Authentication işlemleri
 - `AuthViewModel`: UI state yönetimi
 - `LoginScreen`: Giriş ekranı
 - `SignUpScreen`: Kayıt ekranı
+
+### Profil Sistemi
+- `UserRepository`: Firestore ve Storage işlemleri
+- `ProfileViewModel`: Profil state yönetimi
+- `ProfileScreen`: Profil düzenleme ekranı
+- `User`: Kullanıcı veri modeli
+
+### Kanal Sistemi
+- `ChannelRepository`: Kanal ve mesaj yönetimi
+- `ChannelViewModel`: Kanal state yönetimi
+- `ChannelList`: Kanal listesi bileşeni
+- `ChatScreen`: Mesajlaşma ekranı
 - `AnaSayfa`: Ana sayfa (giriş yapan kullanıcılar için)
 
 Daha fazla bilgi için [Firebase Documentation](https://firebase.google.com/docs/android/setup) sayfasını ziyaret edin.

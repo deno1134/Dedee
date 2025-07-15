@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users koleksiyonu - kullanıcılar yalnızca kendi verilerini okuyabilir ve yazabilir
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Channels koleksiyonu - giriş yapmış kullanıcılar okuyabilir, yaratabilir
+    match /channels/{channelId} {
+      allow read, create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.createdBy;
+    }
+    
+    // Messages koleksiyonu - giriş yapmış kullanıcılar okuyabilir ve yaratabilir
+    match /messages/{messageId} {
+      allow read, create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.senderUid;
+    }
+  }
+}

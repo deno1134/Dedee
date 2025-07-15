@@ -16,6 +16,7 @@ import com.denicord.auth.AuthViewModel
 import com.denicord.screens.AnaSayfa
 import com.denicord.screens.LoginScreen
 import com.denicord.screens.SignUpScreen
+import com.denicord.screens.ProfileScreen
 import com.denicord.ui.theme.DenicordTheme
 
 class MainActivity : ComponentActivity() {
@@ -75,7 +76,20 @@ fun DenicordApp() {
         }
         
         composable("anasayfa") {
-            AnaSayfa(authViewModel = authViewModel)
+            AnaSayfa(
+                authViewModel = authViewModel,
+                onNavigateToProfile = {
+                    navController.navigate("profile")
+                }
+            )
+        }
+        
+        composable("profile") {
+            ProfileScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }
