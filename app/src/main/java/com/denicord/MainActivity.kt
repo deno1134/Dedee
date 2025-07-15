@@ -4,17 +4,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.denicord.auth.AuthViewModel
+import com.denicord.screens.AnaSayfa
+import com.denicord.screens.LoginScreen
+import com.denicord.screens.SignUpScreen
 import com.denicord.ui.theme.DenicordTheme
 
 class MainActivity : ComponentActivity() {
@@ -22,7 +23,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             DenicordTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -37,40 +37,45 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DenicordApp() {
     val navController = rememberNavController()
+    val authViewModel: AuthViewModel = viewModel()
+    val isSignedIn by authViewModel.isSignedIn
     
-    Scaffold(
-        modifier = Modifier.fillMaxSize()
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = "home",
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable("home") {
-                HomeScreen()
+    LaunchedEffect(isSignedIn) {
+        if (isSignedIn) {
+            navController.navigate("anasayfa") {
+                popUpTo("login") { inclusive = true }
+            }
+        } else {
+            navController.navigate("login") {
+                popUpTo("anasayfa") { inclusive = true }
             }
         }
     }
-}
-
-@Composable
-fun HomeScreen() {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+    
+    NavHost(
+        navController = navController,
+        startDestination = if (isSignedIn) "anasayfa" else "login"
     ) {
-        Text(
-            text = "Denicord'a Hoşgeldiniz!",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    DenicordTheme {
-        HomeScreen()
+        composable("login") {
+            LoginScreen(
+                onNavigateToSignUp = {
+                    navController.navigate("signup")
+                },
+                authViewModel = authViewModel
+            )
+        }
+        
+        composable("signup") {
+            SignUpScreen(
+                onNavigateToLogin = {
+                    navController.navigate("login")
+                },
+                authViewModel = authViewModel
+            )
+        }
+        
+        composable("anasayfa") {
+            AnaSayfa(authViewModel = authViewModel)
+        }
     }
 }
