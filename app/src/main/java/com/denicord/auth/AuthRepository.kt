@@ -9,13 +9,14 @@ import com.denicord.network.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import okhttp3.Interceptor
+import okhttp3.Cache
 import java.util.concurrent.TimeUnit
+import java.io.File
 
 private val Context.dataStore by preferencesDataStore(name = "auth_preferences")
 
@@ -25,7 +26,11 @@ class AuthRepository(private val context: Context) {
     private val userDataKey = stringPreferencesKey("user_data")
     
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+        level = if (ApiConfig.isProduction) {
+            HttpLoggingInterceptor.Level.BASIC
+        } else {
+            HttpLoggingInterceptor.Level.BODY
+        }
     }
     
     private val authInterceptor = Interceptor { chain ->
@@ -39,19 +44,27 @@ class AuthRepository(private val context: Context) {
         if (token != null) {
             request.addHeader("Authorization", "Bearer $token")
         }
+        request.addHeader("Content-Type", "application/json")
+        request.addHeader("Accept", "application/json")
         chain.proceed(request.build())
     }
+    
+    private val cache = Cache(
+        directory = File(context.cacheDir, "http_cache"),
+        maxSize = ApiConfig.CACHE_SIZE
+    )
     
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
         .addInterceptor(authInterceptor)
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
+        .cache(cache)
+        .connectTimeout(ApiConfig.CONNECT_TIMEOUT, TimeUnit.SECONDS)
+        .readTimeout(ApiConfig.READ_TIMEOUT, TimeUnit.SECONDS)
+        .writeTimeout(ApiConfig.WRITE_TIMEOUT, TimeUnit.SECONDS)
         .build()
     
     private val retrofit = Retrofit.Builder()
-        .baseUrl("http://10.0.2.2:3000/api/") // Android emulator localhost
+        .baseUrl(ApiConfig.BASE_URL)
         .client(okHttpClient)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
@@ -135,7 +148,7 @@ class AuthRepository(private val context: Context) {
                     val errorResponse = com.google.gson.Gson().fromJson(errorBody, ApiResponse::class.java)
                     errorResponse.message
                 } catch (e: Exception) {
-                    "Kayıt işlemi başarısız"
+                    if (response.code() == 400) "Geçersiz veriler" else "Kayıt işlemi başarısız"
                 }
                 Result.failure(Exception(errorMessage))
             }
@@ -166,17 +179,16 @@ class AuthRepository(private val context: Context) {
                     Result.failure(Exception("Boş yanıt alındı"))
                 }
             } else {
-                val errorBody = response.errorBody()?.string()
-                val errorMessage = try {
-                    val errorResponse = com.google.gson.Gson().fromJson(errorBody, ApiResponse::class.java)
-                    errorResponse.message
-                } catch (e: Exception) {
-                    "Giriş işlemi başarısız"
+                val errorMessage = when (response.code()) {
+                    401 -> "Email/kullanıcı adı veya şifre hatalı"
+                    403 -> "Hesabınız yasaklanmış"
+                    404 -> "Kullanıcı bulunamadı"
+                    else -> "Giriş işlemi başarısız"
                 }
                 Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception("Bağlantı hatası: ${e.message}"))
         }
     }
     
@@ -224,7 +236,7 @@ class AuthRepository(private val context: Context) {
                 }
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception("Sunucu hatası: ${e.message}"))
         }
     }
     
@@ -250,17 +262,15 @@ class AuthRepository(private val context: Context) {
                     Result.failure(Exception("Boş yanıt alındı"))
                 }
             } else {
-                val errorBody = response.errorBody()?.string()
-                val errorMessage = try {
-                    val errorResponse = com.google.gson.Gson().fromJson(errorBody, ApiResponse::class.java)
-                    errorResponse.message
-                } catch (e: Exception) {
-                    "Profil güncelleme başarısız"
+                val errorMessage = when (response.code()) {
+                    400 -> "Geçersiz profil bilgileri"
+                    401 -> "Oturum süresi dolmuş"
+                    else -> "Profil güncelleme başarısız"
                 }
                 Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception("Bağlantı hatası: ${e.message}"))
         }
     }
     
@@ -285,17 +295,15 @@ class AuthRepository(private val context: Context) {
                     Result.failure(Exception("Boş yanıt alındı"))
                 }
             } else {
-                val errorBody = response.errorBody()?.string()
-                val errorMessage = try {
-                    val errorResponse = com.google.gson.Gson().fromJson(errorBody, ApiResponse::class.java)
-                    errorResponse.message
-                } catch (e: Exception) {
-                    "Durum güncelleme başarısız"
+                val errorMessage = when (response.code()) {
+                    400 -> "Geçersiz durum"
+                    401 -> "Oturum süresi dolmuş"
+                    else -> "Durum güncelleme başarısız"
                 }
                 Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception("Bağlantı hatası: ${e.message}"))
         }
     }
     
@@ -314,17 +322,15 @@ class AuthRepository(private val context: Context) {
                 signOut()
                 Result.success(Unit)
             } else {
-                val errorBody = response.errorBody()?.string()
-                val errorMessage = try {
-                    val errorResponse = com.google.gson.Gson().fromJson(errorBody, ApiResponse::class.java)
-                    errorResponse.message
-                } catch (e: Exception) {
-                    "Şifre değiştirme başarısız"
+                val errorMessage = when (response.code()) {
+                    400 -> "Mevcut şifre hatalı"
+                    401 -> "Oturum süresi dolmuş"
+                    else -> "Şifre değiştirme başarısız"
                 }
                 Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception("Bağlantı hatası: ${e.message}"))
         }
     }
     

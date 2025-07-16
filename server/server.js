@@ -19,18 +19,18 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server, {
   cors: {
-    origin: "*",
+    origin: process.env.CORS_ORIGIN || "*",
     methods: ["GET", "POST"]
   }
 });
 
-// Database connection
+// Database connection - Updated for Render.com
 const pool = new Pool({
-  user: process.env.DB_USER || 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'denicord',
-  password: process.env.DB_PASSWORD || 'password',
-  port: process.env.DB_PORT || 5432,
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  max: process.env.DB_POOL_SIZE || 5,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 30000,
 });
 
 // Test database connection
@@ -41,17 +41,41 @@ pool.connect()
 // Middleware
 app.use(helmet());
 app.use(morgan('combined'));
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || "*",
+  credentials: true
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Routes
+// Health check endpoint for Render.com
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV,
+    version: process.env.npm_package_version || '1.0.0'
+  });
+});
+
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/servers', serverRoutes);
 app.use('/api/channels', channelRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/files', fileRoutes);
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Denicord API Server',
+    version: '1.0.0',
+    status: 'running',
+    documentation: '/api/health'
+  });
+});
 
 // Socket.io connection handling
 const connectedUsers = new Map();
@@ -88,10 +112,30 @@ io.on('connection', (socket) => {
   });
 
   // Mesaj gönderme
-  socket.on('send_message', (messageData) => {
-    // Mesajı veritabanına kaydet
-    io.to(`channel_${messageData.channelId}`).emit('new_message', messageData);
-    console.log(`💬 Mesaj: ${messageData.content}`);
+  socket.on('send_message', async (messageData) => {
+    try {
+      // Mesajı veritabanına kaydet
+      const result = await pool.query(
+        'INSERT INTO messages (channel_id, user_id, content, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *',
+        [messageData.channelId, messageData.userId, messageData.content]
+      );
+      
+      const message = result.rows[0];
+      
+      // Tüm kanal üyelerine gönder
+      io.to(`channel_${messageData.channelId}`).emit('new_message', {
+        id: message.id,
+        channelId: message.channel_id,
+        content: message.content,
+        user: messageData.user,
+        timestamp: message.created_at
+      });
+      
+      console.log(`💬 Mesaj: ${messageData.content}`);
+    } catch (error) {
+      console.error('Mesaj kaydetme hatası:', error);
+      socket.emit('error', { message: 'Mesaj gönderilemedi' });
+    }
   });
 
   // Yazıyor göstergesi
@@ -180,10 +224,23 @@ app.use((req, res) => {
   });
 });
 
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+    pool.end(() => {
+      console.log('Database pool closed');
+      process.exit(0);
+    });
+  });
+});
+
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Denicord server ${PORT} portunda çalışıyor`);
   console.log(`📡 Socket.io hazır`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
 });
 
 module.exports = { app, server, io };

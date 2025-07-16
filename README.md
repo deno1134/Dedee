@@ -74,6 +74,45 @@ Discord'un tüm özelliklerini içeren modern bir sohbet platformu. Cross-platfo
 - **WebRTC** - Ses/video çağrıları
 - **CoreData** - Offline storage
 
+## ⚡ Quick Start
+
+### 🚀 **1-Click Deployment (Render.com)**
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
+
+#### Quick Steps:
+1. **Fork** this repository
+2. **Sign up** at [Render.com](https://render.com)
+3. **Create PostgreSQL** database
+4. **Deploy backend** (Node.js Web Service)
+5. **Deploy frontend** (Static Site)
+6. **Configure** environment variables
+7. **Done!** Your app is live
+
+📖 **Detailed Guide**: [QUICK_START.md](QUICK_START.md)
+
+### 🗄️ **Database Setup**
+```bash
+# Create database
+createdb denicord
+
+# Deploy schema
+psql $DATABASE_URL -f server/database/schema.sql
+```
+
+### 🌐 **Environment Variables**
+```env
+# Backend (.env)
+DATABASE_URL=postgresql://user:pass@host:5432/denicord
+JWT_SECRET=your-secret-key
+NODE_ENV=production
+PORT=3000
+
+# Frontend (.env)
+VITE_API_URL=https://your-backend-url.onrender.com/api/
+VITE_WS_URL=wss://your-backend-url.onrender.com
+```
+
 ## 🚀 Kurulum
 
 ### Backend Server
@@ -83,13 +122,6 @@ npm install
 cp .env.example .env
 # .env dosyasını yapılandırın
 npm start
-```
-
-### PostgreSQL Veritabanı
-```bash
-# PostgreSQL yükleyin
-createdb denicord
-psql denicord < database/schema.sql
 ```
 
 ### Android App
@@ -114,16 +146,31 @@ cd ios-ipad
 # Build ve run
 ```
 
+## 🌐 Production Deployment
+
+### Render.com (Recommended)
+- **Free tier** available
+- **PostgreSQL** database included
+- **Auto SSL** certificates
+- **Global CDN**
+- **Easy scaling**
+
+📚 **Complete Guide**: [render-deploy/deployment-guide.md](render-deploy/deployment-guide.md)
+
+### Alternative Platforms
+- **Heroku** - PostgreSQL + Node.js
+- **Vercel** - Frontend + Serverless API
+- **Railway** - Full-stack deployment
+- **DigitalOcean** - VPS deployment
+- **AWS** - EC2 + RDS
+
 ## 🔧 Konfigürasyon
 
 ### Backend .env
 ```env
 # Database
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=yourpassword
-DB_NAME=denicord
+DATABASE_URL=postgresql://user:pass@host:5432/denicord
+DB_SSL=true
 
 # JWT
 JWT_SECRET=your-secret-key
@@ -131,26 +178,29 @@ JWT_EXPIRES_IN=7d
 
 # Server
 PORT=3000
-NODE_ENV=development
+NODE_ENV=production
+
+# CORS
+CORS_ORIGIN=https://your-frontend-url.com
 ```
 
-### Android IP Adresi
+### Android Production
 ```kotlin
-// AuthRepository.kt
-private val retrofit = Retrofit.Builder()
-    .baseUrl("http://YOUR_IP:3000/api/")  // IP adresini değiştirin
-    .build()
+// app/src/main/java/com/denicord/network/ApiConfig.kt
+const val PRODUCTION_API_URL = "https://your-backend-url.onrender.com/api/"
+const val PRODUCTION_WS_URL = "wss://your-backend-url.onrender.com"
 ```
 
 ## 📱 Platform Desteği
 
-| Platform | Durum | Özellikler |
-|----------|-------|------------|
-| 🤖 Android | ✅ Tamamlandı | Tam özellik desteği |
-| 🖥️ Windows | ✅ Tamamlandı | Electron-based |
-| 🍎 macOS | ✅ Tamamlandı | Native look & feel |
-| 🐧 Linux | ✅ Tamamlandı | AppImage format |
-| 📱 iPad | ✅ Tamamlandı | SwiftUI native |
+| Platform | Durum | Deployment | Özellikler |
+|----------|-------|------------|------------|
+| 🌐 Web | ✅ Tamamlandı | Render.com | Full Discord features |
+| 🤖 Android | ✅ Tamamlandı | GitHub Releases | APK distribution |
+| 🖥️ Windows | ✅ Tamamlandı | Electron | Native app |
+| 🍎 macOS | ✅ Tamamlandı | Electron | Native app |
+| 🐧 Linux | ✅ Tamamlandı | Electron | AppImage |
+| 📱 iPad | ✅ Tamamlandı | App Store | SwiftUI native |
 
 ## 🎯 API Endpoints
 
@@ -187,6 +237,11 @@ GET    /api/messages/:channelId  - Mesaj listesi
 POST   /api/messages             - Mesaj gönder
 PUT    /api/messages/:id         - Mesaj düzenle
 DELETE /api/messages/:id         - Mesaj sil
+```
+
+### Health Check
+```
+GET    /api/health               - Server durumu
 ```
 
 ## 🔌 WebSocket Events
@@ -228,6 +283,21 @@ webrtc_offer(data)
 webrtc_answer(data)
 ```
 
+## 📊 Live Demo
+
+### 🌐 **Production URLs**
+- **Web App**: https://denicord-frontend.onrender.com
+- **API**: https://denicord-backend.onrender.com
+- **API Health**: https://denicord-backend.onrender.com/api/health
+- **Android APK**: [GitHub Releases](https://github.com/yourusername/denicord/releases)
+
+### 📱 **Test Credentials**
+```
+Username: demo
+Email: demo@denicord.com
+Password: password123
+```
+
 ## 🛡️ Güvenlik
 
 - **JWT Authentication** - Güvenli oturum yönetimi
@@ -236,6 +306,7 @@ webrtc_answer(data)
 - **CORS** - Cross-origin resource sharing
 - **Rate Limiting** - API hız sınırlaması
 - **Input Validation** - Girdi doğrulama
+- **SSL/TLS** - HTTPS encryption
 
 ## 📊 Performans
 
@@ -244,6 +315,7 @@ webrtc_answer(data)
 - **Caching** - Redis ile önbellekleme
 - **CDN** - Statik dosya dağıtımı
 - **Compression** - Gzip sıkıştırma
+- **Connection Pooling** - Database optimization
 
 ## 🎨 Tasarım
 
@@ -288,17 +360,44 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosy
 
 ## 🔗 Bağlantılar
 
-- [Live Demo](https://denicord.com)
-- [Documentation](https://docs.denicord.com)
-- [API Reference](https://api.denicord.com/docs)
-- [GitHub](https://github.com/denicord/denicord)
+- [Live Demo](https://denicord-frontend.onrender.com)
+- [API Documentation](https://denicord-backend.onrender.com/api/health)
+- [GitHub](https://github.com/yourusername/denicord)
+- [Quick Start Guide](QUICK_START.md)
+- [Deployment Guide](render-deploy/deployment-guide.md)
+- [Backend Setup](BACKEND_SETUP.md)
+- [GitHub Issues](https://github.com/yourusername/denicord/issues)
+- [Community Server](https://discord.gg/denicord)
+- [Twitter](https://twitter.com/denicord)
 
-## 📞 İletişim
+## 🎯 Roadmap
 
-- **Email**: team@denicord.com
-- **Discord**: [Denicord Community](https://discord.gg/denicord)
-- **Twitter**: [@denicord](https://twitter.com/denicord)
+### v1.1 (Next Release)
+- [ ] Mobile push notifications
+- [ ] Dark/Light theme toggle
+- [ ] Message reactions
+- [ ] File drag & drop
+- [ ] Voice activity detection
+
+### v1.2 (Future)
+- [ ] Screen sharing
+- [ ] Message threads
+- [ ] Custom emojis
+- [ ] Bot API
+- [ ] Slash commands
+
+### v2.0 (Long Term)
+- [ ] Video calls
+- [ ] Server templates
+- [ ] Advanced permissions
+- [ ] Audit logs
+- [ ] Analytics dashboard
 
 ---
 
 **Denicord** - Modern Discord klonu 🚀 Made with ❤️ by Denicord Team
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
+[![GitHub Stars](https://img.shields.io/github/stars/yourusername/denicord?style=social)](https://github.com/yourusername/denicord)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/yourusername/denicord/releases)
