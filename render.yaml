@@ -1,15 +1,9 @@
-services:
-  # PostgreSQL Database
-  - type: pserv
-    name: denicord-database
-    env: node
-    plan: starter
-    region: oregon
-    databases:
-      - name: denicord_db
-        databaseName: denicord
-        user: denicord_user
+databases:
+  - name: denicord-database
+    databaseName: denicord
+    user: denicord_user
 
+services:
   # Backend API Server
   - type: web
     name: denicord-backend
@@ -22,11 +16,9 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
       - key: DATABASE_URL
         fromDatabase:
-          name: denicord_db
+          name: denicord-database
           property: connectionString
       - key: JWT_SECRET
         generateValue: true
@@ -34,16 +26,18 @@ services:
         value: https://denicord-frontend.onrender.com
     healthCheckPath: /api/health
 
-  # Frontend Static Site
-  - type: static
+  # Frontend Web Service
+  - type: web
     name: denicord-frontend
-    env: static
+    env: node
     plan: starter
     region: oregon
     rootDir: ./desktop
     buildCommand: npm install && npm run build:web
-    staticPublishPath: ./dist
+    startCommand: npm start
     envVars:
+      - key: NODE_ENV
+        value: production
       - key: VITE_API_URL
         value: https://denicord-backend.onrender.com
       - key: VITE_WS_URL
