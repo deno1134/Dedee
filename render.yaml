@@ -2,13 +2,14 @@ databases:
   - name: denicord-database
     databaseName: denicord
     user: denicord_user
+    plan: free
 
 services:
-  # Backend API Server
+  # Backend API Server (Free Web Service)
   - type: web
     name: denicord-backend
     env: node
-    plan: starter
+    plan: free
     region: oregon
     rootDir: ./server
     buildCommand: npm install
@@ -25,23 +26,6 @@ services:
       - key: CORS_ORIGIN
         value: https://denicord-frontend.onrender.com
     healthCheckPath: /api/health
-
-  # Frontend Web Service
-  - type: web
-    name: denicord-frontend
-    env: node
-    plan: starter
-    region: oregon
-    rootDir: ./desktop
-    buildCommand: npm install && npm run build:web
-    startCommand: npm start
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: VITE_API_URL
-        value: https://denicord-backend.onrender.com
-      - key: VITE_WS_URL
-        value: https://denicord-backend.onrender.com
 
 # Environment Variables for all services
 envVarGroups:

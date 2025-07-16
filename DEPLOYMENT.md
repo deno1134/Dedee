@@ -1,147 +1,138 @@
-# Denicord Deployment Guide - Render.com Blueprint
+# Denicord Deployment Guide - Render.com (ÜCRETSİZ)
 
-## 🚀 Tek Tıkla Deploy (Blueprint)
+## 🆓 Ücretsiz Plan Limitleri
+
+- **Web Services**: 1 ücretsiz
+- **Databases**: 1 ücretsiz (PostgreSQL)
+- **Static Sites**: Sınırsız ücretsiz
+
+## 🚀 Adım 1: Backend + Database (Blueprint)
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/SENIN_GITHUB_USERNAME/denicord)
 
-### 1. Blueprint ile Deploy Etme
-
-1. **Yukarıdaki "Deploy to Render" butonuna tıklayın**
+### Blueprint ile Deploy:
+1. **Yukarıdaki butona tıklayın**
 2. **GitHub repository'nizi bağlayın**
-3. **Service isimlerini kontrol edin:**
-   - Database: `denicord-database` 
-   - Backend: `denicord-backend`
-   - Frontend: `denicord-frontend`
-4. **Environment variables otomatik ayarlanacak**
-5. **"Deploy" butonuna tıklayın**
+3. **Sadece backend ve database deploy edilecek:**
+   - Database: `denicord-database` (FREE)
+   - Backend: `denicord-backend` (FREE)
+4. **"Deploy" butonuna tıklayın**
 
-### 2. Deployment Sonrası
+## 🎨 Adım 2: Frontend (Manuel - Static Site)
 
-Deploy işlemi tamamlandıktan sonra:
+Backend deploy tamamlandıktan sonra:
 
-- **Database** ~2-3 dakika
-- **Backend** ~3-5 dakika  
-- **Frontend** ~2-3 dakika
+### 1. Static Site Oluşturma
+1. **Render Dashboard'a gidin**
+2. **"New" → "Static Site" seçin**
+3. **Aynı GitHub repository'yi seçin**
 
-### 3. URL'ler
-
-Deploy tamamlandıktan sonra URL'leriniz:
-
-- **Frontend**: `https://denicord-frontend.onrender.com`
-- **Backend API**: `https://denicord-backend.onrender.com`
-- **Database**: Internal connection (otomatik bağlı)
-
-## 📱 Mobil Uygulama Güncellemesi
-
-### Android App
-`app/src/main/java/com/denicord/network/ApiService.kt` dosyasında:
-```kotlin
-private const val BASE_URL = "https://denicord-backend.onrender.com/"
+### 2. Static Site Ayarları
 ```
-
-### iOS App  
-`ios-ipad/DenicordIpad/ContentView.swift` dosyasında:
-```swift
-private let apiURL = "https://denicord-backend.onrender.com"
-```
-
-## 🔧 Manual Deployment (Alternatif)
-
-### 1. Database Oluşturma
-```bash
-# Render Dashboard'da PostgreSQL database oluştur
-Database Name: denicord_db
-User: denicord_user
-```
-
-### 2. Backend Deploy
-```bash
-# Render Dashboard'da Web Service oluştur
-Build Command: npm install
-Start Command: npm start
-Environment Variables:
-- NODE_ENV=production
-- PORT=10000
-- DATABASE_URL=(auto-generated)
-- JWT_SECRET=(generate random)
-- CORS_ORIGIN=https://denicord-frontend.onrender.com
-```
-
-### 3. Frontend Deploy
-```bash
-# Render Dashboard'da Static Site oluştur
+Name: denicord-frontend
+Branch: main
+Root Directory: desktop
 Build Command: npm install && npm run build:web
 Publish Directory: dist
-Environment Variables:
-- VITE_API_URL=https://denicord-backend.onrender.com
-- VITE_WS_URL=https://denicord-backend.onrender.com
 ```
 
-## 🛠️ Troubleshooting
-
-### Common Issues:
-
-1. **Database Connection Error**
-   - Verify DATABASE_URL is set correctly
-   - Check database service is running
-
-2. **CORS Error**
-   - Verify CORS_ORIGIN matches frontend URL
-   - Check both HTTP and HTTPS
-
-3. **Build Failed**
-   - Check logs in Render dashboard
-   - Verify package.json scripts
-
-4. **Socket.io Connection Failed**
-   - Verify VITE_WS_URL is set correctly
-   - Check WebSocket port configuration
-
-### Health Check URLs:
-- Backend: `https://denicord-backend.onrender.com/api/health`
-- Frontend: `https://denicord-frontend.onrender.com`
-
-## 📝 Environment Variables
-
-### Backend (.env)
-```env
-NODE_ENV=production
-PORT=10000
-DATABASE_URL=your_database_url
-JWT_SECRET=your_jwt_secret
-CORS_ORIGIN=https://denicord-frontend.onrender.com
+### 3. Environment Variables
 ```
-
-### Frontend (Build time)
-```env
 VITE_API_URL=https://denicord-backend.onrender.com
 VITE_WS_URL=https://denicord-backend.onrender.com
 ```
 
-## 🔄 Updates
+### 4. Deploy
+**"Create Static Site" butonuna tıklayın**
 
-Repository'nizi güncelledikten sonra:
-1. Render otomatik deploy yapar
-2. Değişiklikler 2-5 dakika içinde yayınlanır
-3. Mobile app'leri yeniden build etmeniz gerekebilir
+## 📋 Deployment Süreci
 
-## 💾 Database Schema
+### Timeline:
+- **Database**: ~2-3 dakika ✅
+- **Backend**: ~3-5 dakika ✅
+- **Frontend**: ~2-3 dakika ✅
 
-Database ilk çalıştığında otomatik olarak tablolar oluşturulur:
-- users
-- servers  
-- channels
-- messages
-- server_members
-- ve diğerleri...
+### Final URLs:
+- **Frontend**: `https://denicord-frontend.onrender.com`
+- **Backend**: `https://denicord-backend.onrender.com`
 
-## 📞 Support
+## 🔧 Backend Environment Variables (Otomatik)
 
-Deployment sorunları için:
-1. Render Dashboard logs'larını kontrol edin
-2. Health check URL'lerini test edin
-3. Environment variables'ları doğrulayın
+```env
+NODE_ENV=production
+DATABASE_URL=(auto-generated)
+JWT_SECRET=(auto-generated)
+CORS_ORIGIN=https://denicord-frontend.onrender.com
+```
+
+## 📱 Mobil App Güncellemesi
+
+Deploy tamamlandıktan sonra:
+
+### Android
+`app/src/main/java/com/denicord/network/ApiService.kt`:
+```kotlin
+private const val BASE_URL = "https://denicord-backend.onrender.com/"
+```
+
+### iOS
+`ios-ipad/DenicordIpad/ContentView.swift`:
+```swift
+private let apiURL = "https://denicord-backend.onrender.com"
+```
+
+## 🔄 Ücretsiz Plan Kısıtlamaları
+
+- **Backend**: 750 saat/ay (sleep after 15 min inactivity)
+- **Database**: 1GB storage, 1 million rows
+- **Frontend**: Sınırsız bandwidth ve requests
+
+## 🛠️ Sleep Mode Çözümü
+
+Backend 15 dakika sonra uyur. Çözüm:
+
+### 1. Ping Script (Opsiyonel)
+```javascript
+// Her 10 dakikada backend'e ping at
+setInterval(() => {
+  fetch('https://denicord-backend.onrender.com/api/health')
+}, 10 * 60 * 1000);
+```
+
+### 2. UptimeRobot (Ücretsiz)
+- https://uptimerobot.com/
+- 5 dakikada bir ping
+- Ücretsiz hesap yeterli
+
+## 🎯 Avantajlar
+
+✅ **Tamamen ücretsiz** - Para ödeme yok
+✅ **Otomatik SSL** - HTTPS hazır
+✅ **Git integration** - Push = deploy
+✅ **Custom domains** - Kendi domain'inizi bağlayın
+✅ **Monitoring** - Built-in logs
+
+## 🚨 Troubleshooting
+
+### 1. Backend Sleep
+- İlk request 30 saniye sürebilir
+- UptimeRobot kullanın
+
+### 2. Database Connection
+- Health check: `/api/health`
+- Logs'larda connection string kontrol edin
+
+### 3. CORS Hatası
+- Frontend URL'ini backend CORS'a ekleyin
+- Environment variables'ı kontrol edin
+
+## 💡 Pro Tips
+
+1. **Custom Domain**: Render'da ücretsiz SSL ile domain bağlayın
+2. **Monitoring**: Render dashboard'da metrics takip edin
+3. **Logs**: Real-time logs ile debug yapın
+4. **Git Deploy**: Push to main = auto deploy
 
 ---
 
-**🎉 Tebrikler! Denicord artık canlı ve kullanıma hazır!**
+**🎉 Artık tamamen ücretsiz Discord clone'unuz hazır!**
