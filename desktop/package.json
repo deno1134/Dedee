@@ -1,0 +1,77 @@
+{
+  "name": "denicord-desktop",
+  "version": "1.0.0",
+  "description": "Denicord - Discord Clone Desktop Application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "concurrently \"npm run dev:web\" \"electron .\"",
+    "dev:web": "vite",
+    "build": "vite build && electron-builder",
+    "build:web": "vite build",
+    "build:electron": "electron-builder",
+    "preview": "vite preview"
+  },
+  "build": {
+    "appId": "com.denicord.desktop",
+    "productName": "Denicord",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "preload.js",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "mac": {
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.social-networking"
+    },
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": "nsis"
+    },
+    "linux": {
+      "icon": "assets/icon.png",
+      "target": "AppImage"
+    }
+  },
+  "keywords": [
+    "discord",
+    "clone",
+    "chat",
+    "messaging",
+    "voice",
+    "video",
+    "electron"
+  ],
+  "author": "Denicord Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^8.2.2",
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.1",
+    "axios": "^1.6.2",
+    "socket.io-client": "^4.7.4",
+    "styled-components": "^6.1.6",
+    "framer-motion": "^10.16.16",
+    "react-hot-toast": "^2.4.1",
+    "zustand": "^4.4.7",
+    "date-fns": "^3.0.6",
+    "emoji-picker-react": "^4.7.11",
+    "simple-peer": "^9.11.1",
+    "recordrtc": "^5.6.2",
+    "webrtc-adapter": "^8.2.3"
+  }
+}

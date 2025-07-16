@@ -1,0 +1,51 @@
+services:
+  - type: web
+    name: denicord-backend
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
+    region: frankfurt
+    branch: main
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: DATABASE_URL
+        fromDatabase:
+          name: denicord-db
+          property: connectionString
+      - key: CORS_ORIGIN
+        value: https://denicord.onrender.com
+      - key: MAX_FILE_SIZE
+        value: 50MB
+      - key: UPLOAD_DIR
+        value: /tmp/uploads
+      - key: LOG_LEVEL
+        value: info
+
+  - type: pserv
+    name: denicord-db
+    databaseName: denicord
+    databaseUser: denicord_user
+    plan: free
+    region: frankfurt
+
+  - type: web
+    name: denicord-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    plan: free
+    region: frankfurt
+    branch: main
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
