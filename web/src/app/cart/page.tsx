@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import CheckoutButton from "@/components/CheckoutButton";
 import { useCart } from "@/context/CartContext";
 
 function formatPrice(currency: string, cents: number) {
@@ -51,12 +52,7 @@ export default function CartPage() {
           <span className="font-medium">Ara toplam</span>
           <span className="font-semibold">{formatPrice("USD", totalCents)}</span>
         </div>
-        <Link
-          href="/checkout/success"
-          className="block text-center rounded-md border border-black/10 dark:border-white/10 bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90"
-        >
-          Ödemeye Geç (Demo)
-        </Link>
+        <CheckoutButton />
       </aside>
     </div>
   );
