@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const stripe = new Stripe(secretKey, { apiVersion: "2024-06-20" });
+  const stripe = new Stripe(secretKey);
 
   try {
     const { items } = await req.json();
@@ -21,23 +21,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Empty items" }, { status: 400 });
     }
 
-    const line_items = items
-      .map((it: { slug: string; quantity: number }) => {
-        const product = getProductBySlug(it.slug);
-        if (!product) return null;
-        return {
-          quantity: Math.max(1, Number(it.quantity) || 1),
-          price_data: {
-            currency: product.currency,
-            unit_amount: product.priceCents,
-            product_data: {
-              name: product.name,
-              images: [product.imageUrl],
-            },
+    const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+    for (const it of items as Array<{ slug: string; quantity: number }>) {
+      const product = getProductBySlug(it.slug);
+      if (!product) continue;
+      line_items.push({
+        quantity: Math.max(1, Number(it.quantity) || 1),
+        price_data: {
+          currency: product.currency,
+          unit_amount: product.priceCents,
+          product_data: {
+            name: product.name,
+            images: [product.imageUrl],
           },
-        } as const;
-      })
-      .filter(Boolean) as Stripe.Checkout.SessionCreateParams.LineItem[];
+        },
+      });
+    }
 
     if (line_items.length === 0) {
       return NextResponse.json({ error: "Invalid items" }, { status: 400 });
